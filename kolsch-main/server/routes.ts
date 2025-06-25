@@ -481,9 +481,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recipe routes
   app.get("/api/recipes", async (_req: Request, res: Response) => {
     try {
+      console.log("=== FETCHING RECIPES ===");
       const recipes = await storage.getAllRecipes();
+      console.log("Recipes fetched successfully:", recipes.length, "recipes");
       res.json(recipes);
     } catch (error) {
+      console.error("=== FETCH RECIPES ERROR ===");
+      console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ message: "Failed to fetch recipes" });
     }
   });
@@ -508,13 +514,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/recipes", async (req: Request, res: Response) => {
     try {
-      const validatedData = insertRecipeSchema.parse(req.body);
+      console.log("=== RECIPE CREATION DEBUG ===");
+      console.log("1. Request body:", JSON.stringify(req.body, null, 2));
+      
+      const session = req.session as any;
+      console.log("2. Session data:", { 
+        userId: session?.userId, 
+        breweryId: session?.breweryId,
+        hasSession: !!session 
+      });
+      
+      if (!session.breweryId) {
+        console.log("3. ERROR: No breweryId in session");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Add breweryId to the request body
+      const recipeData = {
+        ...req.body,
+        breweryId: session.breweryId
+      };
+      
+      console.log("4. Recipe data with breweryId:", JSON.stringify(recipeData, null, 2));
+      
+      console.log("5. About to validate with schema...");
+      const validatedData = insertRecipeSchema.parse(recipeData);
+      console.log("6. Validation successful:", JSON.stringify(validatedData, null, 2));
+      
+      console.log("7. About to call storage.createRecipe...");
       const newRecipe = await storage.createRecipe(validatedData);
+      console.log("8. Recipe created successfully:", JSON.stringify(newRecipe, null, 2));
+      
       res.status(201).json(newRecipe);
     } catch (error) {
+      console.error("=== RECIPE CREATION ERROR ===");
+      console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+      
       if (error instanceof z.ZodError) {
+        console.error("Zod validation errors:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ message: "Invalid recipe data", errors: error.errors });
       }
+      
       res.status(500).json({ message: "Failed to create recipe" });
     }
   });
@@ -526,7 +568,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid ID format" });
       }
       
-      const validatedData = insertRecipeSchema.partial().parse(req.body);
+      // Transform numeric fields to strings for database compatibility
+      const transformedData = {
+        ...req.body,
+        targetAbv: req.body.targetAbv?.toString(),
+        targetIbu: req.body.targetIbu?.toString(),
+        srm: req.body.srm?.toString(),
+      };
+      
+      const validatedData = insertRecipeSchema.partial().parse(transformedData);
       const updatedRecipe = await storage.updateRecipe(id, validatedData);
       
       if (!updatedRecipe) {

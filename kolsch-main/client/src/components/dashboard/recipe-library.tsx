@@ -18,9 +18,9 @@ export default function RecipeLibrary() {
   
   // Filter recipes based on search term
   const filteredRecipes = recipes?.filter(recipe => 
-    recipe.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.style?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+    recipe.name?.toLowerCase().includes(searchTerm.toLowerCase()) //||
+    // recipe.style?.toLowerCase().includes(searchTerm.toLowerCase()) || // TODO: add style to schema missing from recipe flow inputs
+   // recipe.notes?.toLowerCase().includes(searchTerm.toLowerCase()) // TODO: add notes to schema missing from recipe flow inputs
   );
   
   return (
@@ -73,7 +73,7 @@ export default function RecipeLibrary() {
                     {recipe.style}
                   </Badge>
                 </div>
-                <p className="text-sm text-neutral-500 mt-1 line-clamp-1">{recipe.notes || 'No description available'}</p>
+                <p className="text-sm text-neutral-500 mt-1 line-clamp-1">{recipe.description || 'No description available'}</p>
                 <div className="flex items-center mt-2 text-xs space-x-4 text-neutral-500">
                   <span>ABV: {recipe.targetAbv || 'N/A'}%</span>
                   <span>IBU: {recipe.targetIbu || 'N/A'}</span>

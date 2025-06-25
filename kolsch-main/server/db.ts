@@ -2,7 +2,7 @@ import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgres://dylan.mcsparren@localhost:5432/postgres';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgres://dylan.mcsparren@localhost:5432/kolsch_db';
 
 console.log('Attempting to connect to database:', DATABASE_URL.replace(/:\/\/.*@/, '://[credentials hidden]@'));
 

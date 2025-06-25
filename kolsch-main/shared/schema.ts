@@ -120,13 +120,14 @@ export const recipes = pgTable("recipes", {
   name: varchar("name").notNull(),
   style: varchar("style"), // removed for error debugging with insertRecipe.notNull(),
   batchSize: numeric("batch_size", { precision: 10, scale: 2 }), // removed for error debugging with insertRecipe.notNull(),
-  targetAbv: numeric("target_abv", { precision: 4, scale: 2 }),
+  targetAbv: decimal("target_abv", { precision: 4, scale: 2 }),
   targetIbu: integer("target_ibu"),
+  srm: integer("srm"),
   ingredients: jsonb("ingredients").notNull(),
   instructions: jsonb("instructions").notNull(), // needs to be defined as an array of strings
   fermentationTemp: varchar("fermentation_temp"),
   fermentationTime: varchar("fermentation_time"),
-  notes: text("notes"),
+  description: text("description"),
   imageUrl: varchar("image_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -206,16 +207,22 @@ export const insertEquipmentSchema = createInsertSchema(equipment).pick({
 });
 export const insertRecipeSchema = createInsertSchema(recipes).pick({
   name: true,
-  style: true,
-  batchSize: true,
-  targetAbv: true,
-  targetIbu: true,
-  ingredients: true,
-  instructions: true,
-  fermentationTemp: true,
-  fermentationTime: true,
-  notes: true,
-  imageUrl: true,
+  //style: true, // TODO: add style to schema missing from recipe flow inputs
+  //batchSize: true, // TODO: add batchSize to schema
+  breweryId: true,
+  // ingredients: true,
+  // instructions: true,
+  //fermentationTemp: true, // TODO: add fermentationTemp to schema
+  //fermentationTime: true, // TODO: add fermentationTime to schema
+  //imageUrl: true, // TODO: add imageUrl to schema
+}).extend({
+  instructions: z.array(z.string()).min(1, "Instructions must have at least one step"),
+  ingredients: z.array(z.string()).min(1, "Instructions must have at least one step"),
+  targetAbv: z.number().optional(),
+  targetIbu: z.number().optional(),
+  srm: z.number().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 export const insertBrewingScheduleSchema = createInsertSchema(brewingSchedules).pick({
   title: true,

@@ -30,19 +30,21 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RecipesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { breweryId } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newRecipe, setNewRecipe] = useState({
     name: "",
     type: "Flagship",
     description: "",
-    abv: "5.0",
-    ibu: "25",
-    srm: "5.0",
+    targetAbv: "5.0",
+    targetIbu: "25",
+    srm: "5.0", // TODO: add srm to schema
     ingredients: [] as string[],
     instructions: [] as string[],
     imageUrl: "",
@@ -102,9 +104,9 @@ export default function RecipesPage() {
       name: "",
       type: "Flagship",
       description: "",
-      abv: "5.0",
-      ibu: "25",
-      srm: "5.0",
+      targetAbv: "5.0",
+      targetIbu: "25",
+      srm: "5.0", // TODO: add srm to schema
       ingredients: [],
       instructions: [],
       imageUrl: "",
@@ -117,8 +119,9 @@ export default function RecipesPage() {
     e.preventDefault();
     createRecipeMutation.mutate({
       ...newRecipe,
-      abv: parseFloat(newRecipe.abv),
-      ibu: parseInt(newRecipe.ibu),
+      breweryId,
+      targetAbv: parseInt(newRecipe.targetAbv),
+      targetIbu: parseInt(newRecipe.targetIbu),
       srm: parseFloat(newRecipe.srm),
     });
   };
@@ -161,7 +164,7 @@ export default function RecipesPage() {
   const filteredRecipes = recipes?.filter(recipe => 
     recipe.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     recipe.style?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+    recipe.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Define table columns
@@ -346,7 +349,6 @@ export default function RecipesPage() {
                       onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
                       className="col-span-3"
                       rows={3}
-                      required
                     />
                   </div>
                   
@@ -355,12 +357,12 @@ export default function RecipesPage() {
                       <div>
                         <Label htmlFor="abv">ABV (%)</Label>
                         <Input
-                          id="abv"
+                          id="targetAbv"
                           type="number"
                           min="0"
                           step="0.1"
-                          value={newRecipe.abv}
-                          onChange={(e) => setNewRecipe({ ...newRecipe, abv: e.target.value })}
+                          value={newRecipe.targetAbv}
+                          onChange={(e) => setNewRecipe({ ...newRecipe, targetAbv: e.target.value })}
                           required
                         />
                       </div>
@@ -371,8 +373,8 @@ export default function RecipesPage() {
                           id="ibu"
                           type="number"
                           min="0"
-                          value={newRecipe.ibu}
-                          onChange={(e) => setNewRecipe({ ...newRecipe, ibu: e.target.value })}
+                          value={newRecipe.targetIbu}
+                          onChange={(e) => setNewRecipe({ ...newRecipe, targetIbu: e.target.value })}
                           required
                         />
                       </div>
@@ -524,7 +526,7 @@ export default function RecipesPage() {
                   {recipe.style}
                 </Badge>
               </div>
-              <p className="text-sm text-neutral-600 mb-4 line-clamp-2">{recipe.notes || 'No description available'}</p>
+              <p className="text-sm text-neutral-600 mb-4 line-clamp-2">{recipe.description || 'No description available'}</p>
               <div className="flex items-center justify-between">
                 <div className="flex space-x-3 text-xs text-neutral-500">
                   <span>ABV: {recipe.targetAbv || 'N/A'}%</span>
