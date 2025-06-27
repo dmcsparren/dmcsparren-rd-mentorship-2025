@@ -37,6 +37,8 @@ export default function RecipesPage() {
   const queryClient = useQueryClient();
   const { breweryId } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingRecipeId, setEditingRecipeId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [newRecipe, setNewRecipe] = useState({
     name: "",
@@ -78,6 +80,32 @@ export default function RecipesPage() {
       });
     },
   });
+
+  const updateRecipeMutation = useMutation({
+    mutationFn: async ({ id, recipeData }: { id: number; recipeData: any }) => {
+      // Send the data as numbers, matching the schema expectations
+      const res = await apiRequest("PUT", `/api/recipes/${id}`, recipeData);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/recipes'] });
+      toast({
+        title: "Recipe updated",
+        description: "The recipe has been successfully updated.",
+      });
+      setIsAddDialogOpen(false);
+      resetForm();
+      setIsEditing(false);
+      setEditingRecipeId(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update recipe",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
   
   const deleteRecipeMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -114,16 +142,61 @@ export default function RecipesPage() {
     setCurrentIngredient("");
     setCurrentInstruction("");
   };
+
+  const loadRecipeForEditing = (recipe: Recipe) => {
+    setNewRecipe({
+      name: recipe.name || "",
+      type: recipe.style || "Flagship", // Using style as type since type isn't in schema
+      description: recipe.description || "",
+      targetAbv: recipe.targetAbv?.toString() || "5.0",
+      targetIbu: recipe.targetIbu?.toString() || "25",
+      srm: recipe.srm?.toString() || "5.0",
+      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+      imageUrl: recipe.imageUrl || "",
+    });
+    setEditingRecipeId(recipe.id);
+    setIsEditing(true);
+    setIsAddDialogOpen(true);
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createRecipeMutation.mutate({
+    const recipeData = {
       ...newRecipe,
       breweryId,
       targetAbv: parseInt(newRecipe.targetAbv),
       targetIbu: parseInt(newRecipe.targetIbu),
       srm: parseFloat(newRecipe.srm),
-    });
+    };
+
+    if (isEditing && editingRecipeId) {
+      updateRecipeMutation.mutate({ id: editingRecipeId, recipeData });
+    } else {
+      createRecipeMutation.mutate(recipeData);
+    }
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setIsAddDialogOpen(open);
+    
+    if (!open) {
+      // Dialog is closing
+      if (isEditing) {
+        setIsEditing(false);
+        setEditingRecipeId(null);
+      }
+      resetForm();
+    } else {
+      // Dialog is opening - if not editing, reset form
+      if (!isEditing) {
+        resetForm();
+      }
+    }
+  };
+
+  const handleCancelClick = () => {
+    handleDialogClose(false);
   };
   
   const addIngredient = () => {
@@ -243,7 +316,11 @@ export default function RecipesPage() {
       cell: ({ row }) => {
         return (
           <div className="flex space-x-2">
-            <Button size="sm" variant="ghost">
+            <Button 
+              size="sm" 
+              variant="ghost"
+              onClick={() => loadRecipeForEditing(row.original)}
+            >
               <Pencil className="h-4 w-4" />
             </Button>
             <Button 
@@ -286,7 +363,7 @@ export default function RecipesPage() {
     <>
       <div className="flex justify-between mb-6">
         <h1 className="text-2xl font-bold">Recipe Library</h1>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary-dark">
               <Plus className="h-4 w-4 mr-2" />
@@ -295,7 +372,7 @@ export default function RecipesPage() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Recipe</DialogTitle>
+              <DialogTitle>{isEditing ? "Edit Recipe" : "Add New Recipe"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <Tabs defaultValue="details" className="w-full">
@@ -489,10 +566,12 @@ export default function RecipesPage() {
               </Tabs>
               
               <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button type="button" variant="outline" onClick={handleCancelClick}>
                   Cancel
                 </Button>
-                <Button type="submit">Save Recipe</Button>
+                <Button type="submit">
+                  {isEditing ? "Update Recipe" : "Save Recipe"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
