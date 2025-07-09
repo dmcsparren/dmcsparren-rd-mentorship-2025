@@ -569,14 +569,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Transform numeric fields to strings for database compatibility
-      const transformedData = {
-        ...req.body,
-        targetAbv: req.body.targetAbv?.toString(),
-        targetIbu: req.body.targetIbu?.toString(),
-        srm: req.body.srm?.toString(),
-      };
+      // const transformedData = {
+      //   ...req.body,
+      //   targetAbv: req.body.targetAbv?.toString(),
+      //   targetIbu: req.body.targetIbu?.toString(),
+      //   srm: req.body.srm?.toString(),
+      // };
       
-      const validatedData = insertRecipeSchema.partial().parse(transformedData);
+      const validatedData = insertRecipeSchema.partial().parse(req.body);
       const updatedRecipe = await storage.updateRecipe(id, validatedData);
       
       if (!updatedRecipe) {
