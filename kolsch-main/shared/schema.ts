@@ -118,13 +118,14 @@ export const recipes = pgTable("recipes", {
   id: serial("id").primaryKey(),
   breweryId: varchar("brewery_id").references(() => breweries.id),
   name: varchar("name").notNull(),
-  style: varchar("style"), // removed for error debugging with insertRecipe.notNull(),
-  batchSize: numeric("batch_size", { precision: 10, scale: 2 }), // removed for error debugging with insertRecipe.notNull(),
-  targetAbv: decimal("target_abv", { precision: 4, scale: 2 }),
+  type: varchar("type"), // Add this line
+  style: varchar("style"),
+  batchSize: numeric("batch_size", { precision: 10, scale: 2 }),
+  targetAbv: numeric("target_abv", { precision: 4, scale: 2 }),
   targetIbu: integer("target_ibu"),
   srm: integer("srm"),
   ingredients: jsonb("ingredients").notNull(),
-  instructions: jsonb("instructions").notNull(), // needs to be defined as an array of strings
+  instructions: jsonb("instructions").notNull(),
   fermentationTemp: varchar("fermentation_temp"),
   fermentationTime: varchar("fermentation_time"),
   description: text("description"),
@@ -207,17 +208,24 @@ export const insertEquipmentSchema = createInsertSchema(equipment).pick({
 });
 export const insertRecipeSchema = createInsertSchema(recipes).pick({
   name: true,
-  //style: true, // TODO: add style to schema missing from recipe flow inputs
-  //batchSize: true, // TODO: add batchSize to schema
+  type: true, // Add this line
   breweryId: true,
-  // ingredients: true,
-  // instructions: true,
-  //fermentationTemp: true, // TODO: add fermentationTemp to schema
-  //fermentationTime: true, // TODO: add fermentationTime to schema
-  //imageUrl: true, // TODO: add imageUrl to schema
 }).extend({
   instructions: z.array(z.string()).min(1, "Instructions must have at least one step"),
   ingredients: z.array(z.string()).min(1, "Instructions must have at least one step"),
+  targetAbv: z.number().optional(),
+  targetIbu: z.number().optional(),
+  srm: z.number().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().optional(),
+});
+
+export const updateRecipeSchema = z.object({
+  name: z.string().optional(),
+  type: z.string().optional(),
+  breweryId: z.string().optional(),
+  instructions: z.array(z.string()).optional(),
+  ingredients: z.array(z.string()).optional(),
   targetAbv: z.number().optional(),
   targetIbu: z.number().optional(),
   srm: z.number().optional(),
@@ -257,6 +265,7 @@ export type Equipment = typeof equipment.$inferSelect;
 export type InsertEquipment = z.infer<typeof insertEquipmentSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
+export type UpdateRecipe = z.infer<typeof insertRecipeSchema>;
 export type BrewingSchedule = typeof brewingSchedules.$inferSelect;
 export type InsertBrewingSchedule = z.infer<typeof insertBrewingScheduleSchema>;
 export type IngredientPriceHistory = typeof ingredientPriceHistory.$inferSelect;

@@ -146,7 +146,7 @@ export default function RecipesPage() {
   const loadRecipeForEditing = (recipe: Recipe) => {
     setNewRecipe({
       name: recipe.name || "",
-      type: recipe.style || "Flagship", // Using style as type since type isn't in schema
+      type: recipe.type || "Flagship", // Changed from recipe.style to recipe.type
       description: recipe.description || "",
       targetAbv: recipe.targetAbv?.toString() || "5.0",
       targetIbu: recipe.targetIbu?.toString() || "25",
@@ -162,14 +162,16 @@ export default function RecipesPage() {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(newRecipe);
     const recipeData = {
       ...newRecipe,
       breweryId,
-      targetAbv: parseInt(newRecipe.targetAbv),
+      type: newRecipe.type, // Add this line
+      targetAbv: parseFloat(newRecipe.targetAbv),
       targetIbu: parseInt(newRecipe.targetIbu),
       srm: parseFloat(newRecipe.srm),
     };
-
+    console.log(recipeData);
     if (isEditing && editingRecipeId) {
       updateRecipeMutation.mutate({ id: editingRecipeId, recipeData });
     } else {
@@ -236,7 +238,7 @@ export default function RecipesPage() {
   // Filter recipes based on search term
   const filteredRecipes = recipes?.filter(recipe => 
     recipe.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.style?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    recipe.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     recipe.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
@@ -269,10 +271,10 @@ export default function RecipesPage() {
       header: "Recipe Name",
     },
     {
-      accessorKey: "type",
+      accessorKey: "type", // Changed from "style" to "type"
       header: "Type",
       cell: ({ row }) => {
-        const type = row.getValue("type") as string;
+        const type = row.getValue("type") as string; // Changed from "style" to "type"
         return (
           <Badge
             variant="outline"
@@ -296,15 +298,20 @@ export default function RecipesPage() {
       },
     },
     {
-      accessorKey: "abv",
+      accessorKey: "targetAbv",
       header: "ABV",
       cell: ({ row }) => {
-        return <span>{row.getValue("abv")}%</span>;
+        const targetAbv = row.getValue("targetAbv") as string;
+        return <span>{targetAbv}%</span>;
       },
     },
     {
-      accessorKey: "ibu",
+      accessorKey: "targetIbu",
       header: "IBU",
+      cell: ({ row }) => {
+        const targetIbu = row.getValue("targetIbu") as string;
+        return <span>{targetIbu}</span>;
+      },
     },
     {
       accessorKey: "srm",

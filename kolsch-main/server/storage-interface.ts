@@ -12,6 +12,7 @@ import {
   InsertEquipment,
   Recipe,
   InsertRecipe,
+  UpdateRecipe,
   BrewingSchedule,
   InsertBrewingSchedule,
   IngredientPriceHistory,
@@ -58,7 +59,7 @@ export interface IStorage {
   getAllRecipes(): Promise<Recipe[]>;
   getRecipe(id: number): Promise<Recipe | undefined>;
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
-  updateRecipe(id: number, recipe: Partial<Recipe>): Promise<Recipe | undefined>;
+  updateRecipe(id: number, recipe: Partial<UpdateRecipe>): Promise<Recipe | undefined>;
   deleteRecipe(id: number): Promise<boolean>;
   
   // Brewing schedule operations

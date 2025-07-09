@@ -7,6 +7,7 @@ export const recipes = pgTable("recipes", {
 	id: serial().primaryKey().notNull(),
 	breweryId: varchar("brewery_id"),
 	name: varchar().notNull(),
+	type: varchar("type"), // Add this line
 	style: varchar(),
 	batchSize: numeric("batch_size", { precision: 10, scale:  2 }),
 	targetAbv: numeric("target_abv", { precision: 4, scale:  2 }),
