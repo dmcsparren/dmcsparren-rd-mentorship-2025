@@ -526,13 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID format" });
       }
-      
-      console.log("=== RECIPE UPDATE DEBUG ===");
-      console.log("1. Request body:", JSON.stringify(req.body, null, 2));
-      console.log("2. targetAbv type:", typeof req.body.targetAbv);
-      console.log("3. targetIbu type:", typeof req.body.targetIbu);
-      console.log("4. srm type:", typeof req.body.srm);
-      
+ 
       const validatedData = updateRecipeSchema.parse(req.body);
       const updatedRecipe = await storage.updateRecipe(id, validatedData);
       
