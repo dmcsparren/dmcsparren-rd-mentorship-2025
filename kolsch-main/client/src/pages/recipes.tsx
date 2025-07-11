@@ -619,7 +619,7 @@ export default function RecipesPage() {
                   <span>IBU: {recipe.targetIbu || 'N/A'}</span>
                   <span>Batch: {recipe.batchSize}L</span>
                 </div>
-                <Button variant="ghost" size="sm">View Details</Button>
+                <Button variant="ghost" size="sm" onClick={() => loadRecipeForEditing(recipe)}>View Details</Button>
               </div>
             </CardContent>
           </Card>
