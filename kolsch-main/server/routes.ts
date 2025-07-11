@@ -10,6 +10,7 @@ import {
   insertInventoryItemSchema, 
   insertEquipmentSchema, 
   insertRecipeSchema, 
+  updateRecipeSchema,
   insertBrewingScheduleSchema,
   insertIngredientSourceSchema,
   insertIngredientPriceHistorySchema
@@ -39,13 +40,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication status endpoint
   app.get("/api/auth/user", async (req: Request, res: Response) => {
     const session = req.session as any;
-    console.log("Auth check - Session data:", session);
-    console.log("Auth check - User ID:", session?.userId);
     
     if (session.userId) {
       try {
         const user = await storage.getUser(session.userId);
-        console.log("Auth check - Found user:", user ? "Yes" : "No");
         if (user) {
           const brewery = await storage.getBrewery(user.breweryId!);
           const responseData = {
@@ -60,7 +58,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             brewery
           };
-          console.log("Auth check - Sending response:", responseData);
           res.json(responseData);
           return;
         }
@@ -68,7 +65,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error fetching user:", error);
       }
     }
-    console.log("Auth check - No valid session, returning null");
     res.json(null);
   });
   
@@ -76,43 +72,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/signup", async (req: Request, res: Response) => {
     try {
       const { user, brewery } = req.body;
-      
-      console.log("Signup attempt - Request body:", { 
-        user: { ...user, password: '[REDACTED]' }, 
-        brewery 
-      });
 
       // Validate required user fields
       if (!user.firstName || !user.lastName || !user.email || !user.username || !user.password) {
-        console.log("Signup validation failed - Missing user fields");
         return res.status(400).json({ message: "All user fields are required" });
       }
 
       // Validate required brewery fields
       if (!brewery.name || !brewery.type || !brewery.location) {
-        console.log("Signup validation failed - Missing brewery fields");
         return res.status(400).json({ message: "Brewery name, type, and location are required" });
       }
 
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(user.username);
       if (existingUsername) {
-        console.log("Signup failed - Username already exists:", user.username);
         return res.status(400).json({ message: "Username already exists" });
       }
 
       // Check if email already exists
       const existingEmail = await storage.getUserByEmail(user.email);
       if (existingEmail) {
-        console.log("Signup failed - Email already exists:", user.email);
         return res.status(400).json({ message: "Email already exists" });
       }
 
       // Generate unique brewery GUID
       const breweryId = randomUUID();
       const userId = randomUUID();
-
-      console.log("Creating new brewery and user with IDs:", { breweryId, userId });
 
       // Hash password
       const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -130,8 +115,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         specialties: brewery.specialties || null,
       });
 
-      console.log("Created brewery:", newBrewery);
-
       // Create user account linked to brewery
       const newUser = await storage.createUser({
         id: userId,
@@ -144,14 +127,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role || 'owner',
       });
 
-      console.log("Created user:", { ...newUser, password: '[REDACTED]' });
-
       // Brewery account created successfully - now log them in automatically
       const session = req.session as any;
       session.userId = newUser.id;
       session.breweryId = newBrewery.id;
-
-      console.log("Session created:", { userId: session.userId, breweryId: session.breweryId });
 
       res.json({ 
         message: "Account created successfully",
@@ -205,9 +184,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       session.userId = user.id;
       session.breweryId = user.breweryId;
       
-      console.log("Login - Setting session userId:", user.id);
-      console.log("Login - Setting session breweryId:", user.breweryId);
-      
       // Force session save
       await new Promise((resolve, reject) => {
         req.session.save((err) => {
@@ -215,7 +191,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error("Session save error:", err);
             reject(err);
           } else {
-            console.log("Session saved successfully");
             resolve(true);
           }
         });
@@ -329,28 +304,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/inventory", async (req: Request, res: Response) => {
     try {
-      console.log('\nReceived inventory item data:');
-      console.log(JSON.stringify(req.body, null, 2));
-      
       const validatedData = insertInventoryItemSchema.parse(req.body);
-      console.log('\nValidated data:');
-      console.log(JSON.stringify(validatedData, null, 2));
       
       const newItem = await storage.createInventoryItem(validatedData);
       res.status(201).json(newItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('\nValidation error details:');
-        console.error('Errors:', JSON.stringify(error.errors, null, 2));
-        console.error('Received data:', JSON.stringify(req.body, null, 2));
-        
         return res.status(400).json({ 
           message: "Invalid inventory item data", 
           errors: error.errors,
           received: req.body 
         });
       }
-      console.error('\nError creating inventory item:', error);
       res.status(500).json({ message: "Failed to create inventory item" });
     }
   });
@@ -481,15 +446,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recipe routes
   app.get("/api/recipes", async (_req: Request, res: Response) => {
     try {
-      console.log("=== FETCHING RECIPES ===");
       const recipes = await storage.getAllRecipes();
-      console.log("Recipes fetched successfully:", recipes.length, "recipes");
       res.json(recipes);
     } catch (error) {
-      console.error("=== FETCH RECIPES ERROR ===");
-      console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
-      console.error("Error message:", error instanceof Error ? error.message : String(error));
-      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ message: "Failed to fetch recipes" });
     }
   });
@@ -567,16 +526,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID format" });
       }
-      
-      // Transform numeric fields to strings for database compatibility
-      // const transformedData = {
-      //   ...req.body,
-      //   targetAbv: req.body.targetAbv?.toString(),
-      //   targetIbu: req.body.targetIbu?.toString(),
-      //   srm: req.body.srm?.toString(),
-      // };
-      
-      const validatedData = insertRecipeSchema.partial().parse(req.body);
+ 
+      const validatedData = updateRecipeSchema.parse(req.body);
       const updatedRecipe = await storage.updateRecipe(id, validatedData);
       
       if (!updatedRecipe) {
@@ -586,6 +537,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedRecipe);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.log("=== VALIDATION ERROR ===");
+        console.log("Zod errors:", JSON.stringify(error.errors, null, 2));
+        console.log("Received data:", JSON.stringify(req.body, null, 2));
         return res.status(400).json({ message: "Invalid recipe data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update recipe" });

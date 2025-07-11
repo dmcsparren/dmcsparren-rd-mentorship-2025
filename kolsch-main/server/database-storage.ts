@@ -17,6 +17,7 @@ import {
   type InsertEquipment,
   type Recipe,
   type InsertRecipe,
+  type UpdateRecipe,
   type BrewingSchedule,
   type InsertBrewingSchedule,
   type IngredientPriceHistory,
@@ -207,7 +208,7 @@ export class DatabaseStorage implements IStorage {
     return newRecipe;
   }
 
-  async updateRecipe(id: number, recipe: Partial<Recipe>): Promise<Recipe | undefined> {
+  async updateRecipe(id: number, recipe: Partial<UpdateRecipe>): Promise<Recipe | undefined> {
     const [updatedRecipe] = await db
       .update(recipes)
       .set({ ...recipe, updatedAt: new Date() })
