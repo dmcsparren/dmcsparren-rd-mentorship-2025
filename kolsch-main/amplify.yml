@@ -1,0 +1,32 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Navigating to application directory..."
+        - cd kolsch-main
+        - echo "Installing dependencies..."
+        - npm ci
+        - echo "Setting up environment..."
+        - 'echo "Node version: $(node --version)"'
+        - 'echo "NPM version: $(npm --version)"'
+    build:
+      commands:
+        - cd kolsch-main
+        - echo "Building full-stack application..."
+        - npm run build
+        - echo "Build completed successfully"
+        - echo "Creating build directory for Amplify..."
+        - mkdir -p build
+        - cp -r dist/* build/
+        - echo "Build output directory contents:"
+        - ls -la build/
+  artifacts:
+    baseDirectory: kolsch-main/build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - kolsch-main/node_modules/**/*
+      - kolsch-main/dist/**/*
+      - kolsch-main/build/**/* 
