@@ -1,0 +1,53 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Current directory: $(pwd)"
+        - echo "Listing all directories:"
+        - ls -la
+        - echo "Checking if kolsch-main exists:"
+        - ls -la | grep kolsch || echo "kolsch-main not found"
+        - echo "Checking if package.json exists in current directory:"
+        - ls -la package.json || echo "package.json not found in current directory"
+        - echo "Checking if package.json exists in kolsch-main:"
+        - ls -la kolsch-main/package.json || echo "package.json not found in kolsch-main"
+        - echo "Determining correct application directory..."
+        - |
+          if [ -f "kolsch-main/package.json" ]; then
+            echo "Found package.json in kolsch-main, navigating there..."
+            cd kolsch-main
+          elif [ -f "package.json" ]; then
+            echo "Found package.json in current directory, staying here..."
+          else
+            echo "ERROR: No package.json found!"
+            exit 1
+          fi
+        - echo "Installing dependencies..."
+        - npm ci
+        - echo "Setting up environment..."
+        - 'echo "Node version: $(node --version)"'
+        - 'echo "NPM version: $(npm --version)"'
+    build:
+      commands:
+        - |
+          if [ -f "kolsch-main/package.json" ]; then
+            cd kolsch-main
+          fi
+        - echo "Building full-stack application..."
+        - npm run build
+        - echo "Build completed successfully"
+        - echo "Creating build directory for Amplify..."
+        - mkdir -p build
+        - cp -r dist/* build/
+        - echo "Build output directory contents:"
+        - ls -la build/
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - dist/**/*
+      - build/**/* 
