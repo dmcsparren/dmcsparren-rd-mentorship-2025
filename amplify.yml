@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "Current directory: $(pwd)"
+        - echo "Current directory:" && pwd
         - echo "Listing all directories:"
         - ls -la
         - echo "Checking if kolsch-main exists:"
@@ -15,31 +15,42 @@ frontend:
         - echo "Determining correct application directory..."
         - |
           if [ -f "kolsch-main/package.json" ]; then
-            echo "Found package.json in kolsch-main, navigating there..."
-            cd kolsch-main
+            echo "Found package.json in kolsch-main, will navigate there for build..."
+            export APP_DIR="kolsch-main"
           elif [ -f "package.json" ]; then
-            echo "Found package.json in current directory, staying here..."
+            echo "Found package.json in current directory, will stay here..."
+            export APP_DIR="."
           else
             echo "ERROR: No package.json found!"
             exit 1
           fi
         - echo "Installing dependencies..."
-        - npm ci
-        - echo "Setting up environment..."
-        - 'echo "Node version: $(node --version)"'
-        - 'echo "NPM version: $(npm --version)"'
+        - |
+          if [ "$APP_DIR" = "kolsch-main" ]; then
+            cd kolsch-main && npm ci
+          else
+            npm ci
+          fi
+        - echo "Node version:" && node --version
+        - echo "NPM version:" && npm --version
     build:
       commands:
+        - echo "Starting build process..."
         - |
           if [ -f "kolsch-main/package.json" ]; then
+            echo "Building in kolsch-main directory..."
             cd kolsch-main
+            npm run build
+            echo "Build completed, copying to root build directory..."
+            cd ..
+            mkdir -p build
+            cp -r kolsch-main/dist/* build/ 2>/dev/null || cp -r kolsch-main/build/* build/ 2>/dev/null || echo "No dist or build folder found"
+          else
+            echo "Building in current directory..."
+            npm run build
+            mkdir -p build
+            cp -r dist/* build/ 2>/dev/null || cp -r build/* build/ 2>/dev/null || echo "Build folder already exists"
           fi
-        - echo "Building full-stack application..."
-        - npm run build
-        - echo "Build completed successfully"
-        - echo "Creating build directory for Amplify..."
-        - mkdir -p build
-        - cp -r dist/* build/
         - echo "Build output directory contents:"
         - ls -la build/
   artifacts:
@@ -49,5 +60,7 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+      - kolsch-main/node_modules/**/*
       - dist/**/*
-      - build/**/* 
+      - kolsch-main/dist/**/*
+      - build/**/*
