@@ -17,15 +17,12 @@ frontend:
         - npm ci
         - echo "Building application..."
         - npm run build
-        - echo "Checking what was built:"
-        - ls -la
-        - echo "Looking for build output folders:"
-        - find . -name "build" -o -name "dist" -type d
-        - echo "Contents of any build/dist folders:"
-        - test -d build && ls -la build/ || echo "No build folder"
-        - test -d dist && ls -la dist/ || echo "No dist folder"
+        - echo "Checking build output:"
+        - ls -la dist/
+        - echo "Checking public folder:"
+        - ls -la dist/public/
   artifacts:
-    baseDirectory: kolsch-main/dist
+    baseDirectory: kolsch-main/dist/public
     files:
       - '**/*'
   cache:
