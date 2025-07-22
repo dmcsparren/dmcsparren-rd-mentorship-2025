@@ -21,10 +21,26 @@ frontend:
         - ls -la dist/
         - echo "Checking public folder:"
         - ls -la dist/public/
+        - echo "Checking server build:"
+        - ls -la dist/
+        - echo "Creating start script for Amplify..."
+        - echo '#!/bin/bash' > start.sh
+        - echo 'cd kolsch-main' >> start.sh
+        - echo 'NODE_ENV=production node dist/index.js' >> start.sh
+        - chmod +x start.sh
+        - echo "Start script created:"
+        - cat start.sh
   artifacts:
     baseDirectory: kolsch-main/dist/public
     files:
       - '**/*'
+    secondaryArtifacts:
+      server:
+        baseDirectory: kolsch-main
+        files:
+          - dist/index.js
+          - start.sh
+          - package.json
   cache:
     paths:
       - kolsch-main/node_modules/**/*
