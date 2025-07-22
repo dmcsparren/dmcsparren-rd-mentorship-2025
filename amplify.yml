@@ -4,63 +4,30 @@ frontend:
     preBuild:
       commands:
         - echo "Current directory:" && pwd
-        - echo "Listing all directories:"
+        - echo "Listing contents:"
         - ls -la
-        - echo "Checking if kolsch-main exists:"
-        - ls -la | grep kolsch || echo "kolsch-main not found"
-        - echo "Checking if package.json exists in current directory:"
-        - ls -la package.json || echo "package.json not found in current directory"
-        - echo "Checking if package.json exists in kolsch-main:"
-        - ls -la kolsch-main/package.json || echo "package.json not found in kolsch-main"
-        - echo "Determining correct application directory..."
-        - |
-          if [ -f "kolsch-main/package.json" ]; then
-            echo "Found package.json in kolsch-main, will navigate there for build..."
-            export APP_DIR="kolsch-main"
-          elif [ -f "package.json" ]; then
-            echo "Found package.json in current directory, will stay here..."
-            export APP_DIR="."
-          else
-            echo "ERROR: No package.json found!"
-            exit 1
-          fi
-        - echo "Installing dependencies..."
-        - |
-          if [ "$APP_DIR" = "kolsch-main" ]; then
-            cd kolsch-main && npm ci
-          else
-            npm ci
-          fi
-        - echo "Node version:" && node --version
-        - echo "NPM version:" && npm --version
+        - echo "Checking for kolsch-main:"
+        - test -d kolsch-main && echo "kolsch-main directory exists" || echo "kolsch-main directory not found"
+        - test -f kolsch-main/package.json && echo "package.json found in kolsch-main" || echo "package.json not found in kolsch-main"
     build:
       commands:
         - echo "Starting build process..."
-        - |
-          if [ -f "kolsch-main/package.json" ]; then
-            echo "Building in kolsch-main directory..."
-            cd kolsch-main
-            npm run build
-            echo "Build completed, copying to root build directory..."
-            cd ..
-            mkdir -p build
-            cp -r kolsch-main/dist/* build/ 2>/dev/null || cp -r kolsch-main/build/* build/ 2>/dev/null || echo "No dist or build folder found"
-          else
-            echo "Building in current directory..."
-            npm run build
-            mkdir -p build
-            cp -r dist/* build/ 2>/dev/null || cp -r build/* build/ 2>/dev/null || echo "Build folder already exists"
-          fi
-        - echo "Build output directory contents:"
-        - ls -la build/
+        - cd kolsch-main
+        - echo "Installing dependencies in kolsch-main..."
+        - npm ci
+        - echo "Building application..."
+        - npm run build
+        - echo "Checking what was built:"
+        - ls -la
+        - echo "Looking for build output folders:"
+        - find . -name "build" -o -name "dist" -type d
+        - echo "Contents of any build/dist folders:"
+        - test -d build && ls -la build/ || echo "No build folder"
+        - test -d dist && ls -la dist/ || echo "No dist folder"
   artifacts:
-    baseDirectory: build
+    baseDirectory: kolsch-main/dist
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
       - kolsch-main/node_modules/**/*
-      - dist/**/*
-      - kolsch-main/dist/**/*
-      - build/**/*
