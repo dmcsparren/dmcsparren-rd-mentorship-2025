@@ -30,6 +30,11 @@ frontend:
         - chmod +x start.sh
         - echo "Start script created:"
         - cat start.sh
+        - echo "Creating _redirects file for Amplify..."
+        - echo '/api/* /api/* 200' > dist/public/_redirects
+        - echo '/* /index.html 200' >> dist/public/_redirects
+        - echo "_redirects file created:"
+        - cat dist/public/_redirects
   artifacts:
     baseDirectory: kolsch-main/dist/public
     files:

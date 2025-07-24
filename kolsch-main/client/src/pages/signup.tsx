@@ -88,7 +88,13 @@ export default function SignupPage() {
             specialties: formData.specialties,
           }
         }),
+        redirect: 'follow', // Explicitly handle redirects
       });
+
+      // Check if we got a redirect response
+      if (response.redirected) {
+        console.log('Request was redirected to:', response.url);
+      }
 
       if (!response.ok) {
         const error = await response.json();
