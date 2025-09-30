@@ -34,7 +34,7 @@ export interface IStorage {
   initializeBreweryData(breweryId: string): Promise<void>;
   
   // Inventory operations
-  getInventoryItems(): Promise<InventoryItem[]>;
+  getInventoryItems(breweryId?: string): Promise<InventoryItem[]>;
   getInventoryItem(id: number): Promise<InventoryItem | undefined>;
   createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
   updateInventoryItem(id: number, item: Partial<InventoryItem>): Promise<InventoryItem | undefined>;

@@ -90,7 +90,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Inventory operations filtered by brewery
-  async getInventoryItems(): Promise<InventoryItem[]> {
+  async getInventoryItems(breweryId?: string): Promise<InventoryItem[]> {
+    if (breweryId) {
+      const items = await db.select().from(inventoryItems).where(eq(inventoryItems.breweryId, breweryId));
+      return items;
+    }
     const items = await db.select().from(inventoryItems);
     return items;
   }

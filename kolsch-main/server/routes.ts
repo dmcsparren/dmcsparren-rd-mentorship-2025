@@ -302,9 +302,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Inventory routes
-  app.get("/api/inventory", async (_req: Request, res: Response) => {
+  app.get("/api/inventory", async (req: Request, res: Response) => {
     try {
-      const items = await storage.getInventoryItems();
+      const session = req.session as any;
+      const breweryId = session?.breweryId;
+
+      if (!breweryId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const items = await storage.getInventoryItems(breweryId);
       res.json(items);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch inventory items" });
