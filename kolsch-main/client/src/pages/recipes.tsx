@@ -47,7 +47,7 @@ export default function RecipesPage() {
     targetAbv: "5.0",
     targetIbu: "25",
     srm: "5.0", // TODO: add srm to schema
-    ingredients: [] as string[],
+    ingredients: [] as string[], // TODO: add ingredients to schema
     instructions: [] as string[],
     imageUrl: "",
   });
