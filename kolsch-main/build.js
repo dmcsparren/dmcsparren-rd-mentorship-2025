@@ -8,10 +8,10 @@ await esbuild.build({
   outdir: 'dist',
   packages: 'external',
   banner: {
-    js: `import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+    js: `import { fileURLToPath as __fileURLToPath } from 'url';
+import { dirname as __pathDirname } from 'path';
+const __filename = __fileURLToPath(import.meta.url);
+const __dirname = __pathDirname(__filename);
 `
   }
 });
