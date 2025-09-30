@@ -1,11 +1,8 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd kolsch-main && npm ci && npm run build"
+nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
 startCommand = "cd kolsch-main && npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[[build.nixpacks.phases.setup]]
-nixPkgs = ["nodejs_20"]
