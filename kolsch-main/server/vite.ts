@@ -1,14 +1,14 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname is provided by esbuild banner in production build
+// For development (tsx), we need to define it
+const __dirname = import.meta.dirname || path.dirname(new URL(import.meta.url).pathname);
 
 const viteLogger = createLogger();
 
