@@ -6,9 +6,7 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-// __dirname is provided by esbuild banner in production build
-// For development (tsx), we need to define it
-const __dirname = import.meta.dirname || path.dirname(new URL(import.meta.url).pathname);
+// Note: __dirname is provided by esbuild banner in production build
 
 const viteLogger = createLogger();
 
