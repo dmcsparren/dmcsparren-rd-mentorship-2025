@@ -62,6 +62,18 @@ export default function SignupPage() {
     }
 
     try {
+      // Test the API endpoint first
+      console.log('Testing API endpoint...');
+      const testResponse = await fetch('/api/auth/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        redirect: 'follow',
+      });
+      console.log('Test response status:', testResponse.status);
+      console.log('Test response URL:', testResponse.url);
+
       // Create brewery and user account
       const response = await fetch('/api/signup', {
         method: 'POST',
@@ -95,6 +107,9 @@ export default function SignupPage() {
       if (response.redirected) {
         console.log('Request was redirected to:', response.url);
       }
+
+      console.log('Signup response status:', response.status);
+      console.log('Signup response URL:', response.url);
 
       if (!response.ok) {
         const error = await response.json();

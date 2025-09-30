@@ -3,49 +3,29 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "Current directory:" && pwd
-        - echo "Listing contents:"
-        - ls -la
-        - echo "Checking for kolsch-main:"
-        - test -d kolsch-main && echo "kolsch-main directory exists" || echo "kolsch-main directory not found"
-        - test -f kolsch-main/package.json && echo "package.json found in kolsch-main" || echo "package.json not found in kolsch-main"
+        - echo "Starting pre-build phase..."
+        - node --version
+        - npm --version
+        - echo "Installing dependencies..."
+        - npm ci
     build:
       commands:
-        - echo "Starting build process..."
-        - cd kolsch-main
-        - echo "Installing dependencies in kolsch-main..."
-        - npm ci
-        - echo "Building application..."
+        - echo "Building React frontend..."
         - npm run build
-        - echo "Checking build output:"
-        - ls -la dist/
-        - echo "Checking public folder:"
-        - ls -la dist/public/
-        - echo "Checking server build:"
-        - ls -la dist/
-        - echo "Creating start script for Amplify..."
-        - echo '#!/bin/bash' > start.sh
-        - echo 'cd kolsch-main' >> start.sh
-        - echo 'NODE_ENV=production node dist/index.js' >> start.sh
-        - chmod +x start.sh
-        - echo "Start script created:"
-        - cat start.sh
-        - echo "Creating _redirects file for Amplify..."
-        - echo '/api/* /api/* 200' > dist/public/_redirects
-        - echo '/* /index.html 200' >> dist/public/_redirects
-        - echo "_redirects file created:"
-        - cat dist/public/_redirects
+        - echo "Creating _redirects file for SPA routing..."
+        - echo '/* /index.html 200' > dist/public/_redirects
   artifacts:
-    baseDirectory: kolsch-main/dist/public
+    baseDirectory: dist/public
     files:
       - '**/*'
-    secondaryArtifacts:
-      server:
-        baseDirectory: kolsch-main
-        files:
-          - dist/index.js
-          - start.sh
-          - package.json
   cache:
     paths:
-      - kolsch-main/node_modules/**/*
+      - node_modules/**/*
+backend:
+  phases:
+    build:
+      commands:
+        - echo "Building Express server..."
+        - npm ci
+        - npm run build
+        - echo "Server built successfully"
