@@ -48,21 +48,21 @@ export interface IStorage {
   deleteIngredientSource(id: number): Promise<boolean>;
   
   // Equipment operations
-  getAllEquipment(): Promise<Equipment[]>;
+  getAllEquipment(breweryId?: string): Promise<Equipment[]>;
   getEquipment(id: number): Promise<Equipment | undefined>;
   createEquipment(equipment: InsertEquipment): Promise<Equipment>;
   updateEquipment(id: number, equipment: Partial<Equipment>): Promise<Equipment | undefined>;
   deleteEquipment(id: number): Promise<boolean>;
-  
+
   // Recipe operations
-  getAllRecipes(): Promise<Recipe[]>;
+  getAllRecipes(breweryId?: string): Promise<Recipe[]>;
   getRecipe(id: number): Promise<Recipe | undefined>;
   createRecipe(recipe: InsertRecipe): Promise<Recipe>;
   updateRecipe(id: number, recipe: Partial<Recipe>): Promise<Recipe | undefined>;
   deleteRecipe(id: number): Promise<boolean>;
-  
+
   // Brewing schedule operations
-  getAllBrewingSchedules(): Promise<BrewingSchedule[]>;
+  getAllBrewingSchedules(breweryId?: string): Promise<BrewingSchedule[]>;
   getBrewingSchedule(id: number): Promise<BrewingSchedule | undefined>;
   createBrewingSchedule(schedule: InsertBrewingSchedule): Promise<BrewingSchedule>;
   updateBrewingSchedule(id: number, schedule: Partial<BrewingSchedule>): Promise<BrewingSchedule | undefined>;

@@ -82,8 +82,12 @@ export class MemStorage implements IStorage {
   }
   
   // Inventory operations
-  async getInventoryItems(): Promise<InventoryItem[]> {
-    return Array.from(this.inventory.values());
+  async getInventoryItems(breweryId?: string): Promise<InventoryItem[]> {
+    const items = Array.from(this.inventory.values());
+    if (breweryId) {
+      return items.filter(item => item.breweryId === breweryId);
+    }
+    return items;
   }
   
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
@@ -130,8 +134,12 @@ export class MemStorage implements IStorage {
   }
   
   // Equipment operations
-  async getAllEquipment(): Promise<Equipment[]> {
-    return Array.from(this.equipment.values());
+  async getAllEquipment(breweryId?: string): Promise<Equipment[]> {
+    const items = Array.from(this.equipment.values());
+    if (breweryId) {
+      return items.filter(item => item.breweryId === breweryId);
+    }
+    return items;
   }
   
   async getEquipment(id: number): Promise<Equipment | undefined> {
@@ -175,8 +183,12 @@ export class MemStorage implements IStorage {
   }
   
   // Recipe operations
-  async getAllRecipes(): Promise<Recipe[]> {
-    return Array.from(this.recipes.values());
+  async getAllRecipes(breweryId?: string): Promise<Recipe[]> {
+    const items = Array.from(this.recipes.values());
+    if (breweryId) {
+      return items.filter(item => item.breweryId === breweryId);
+    }
+    return items;
   }
   
   async getRecipe(id: number): Promise<Recipe | undefined> {
@@ -221,8 +233,12 @@ export class MemStorage implements IStorage {
   }
   
   // Brewing schedule operations
-  async getAllBrewingSchedules(): Promise<BrewingSchedule[]> {
-    return Array.from(this.schedules.values());
+  async getAllBrewingSchedules(breweryId?: string): Promise<BrewingSchedule[]> {
+    const items = Array.from(this.schedules.values());
+    if (breweryId) {
+      return items.filter(item => item.breweryId === breweryId);
+    }
+    return items;
   }
   
   async getBrewingSchedule(id: number): Promise<BrewingSchedule | undefined> {

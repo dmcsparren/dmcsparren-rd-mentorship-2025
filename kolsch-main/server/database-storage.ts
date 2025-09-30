@@ -160,7 +160,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Equipment operations
-  async getAllEquipment(): Promise<Equipment[]> {
+  async getAllEquipment(breweryId?: string): Promise<Equipment[]> {
+    if (breweryId) {
+      const equipmentList = await db.select().from(equipment).where(eq(equipment.breweryId, breweryId));
+      return equipmentList;
+    }
     const equipmentList = await db.select().from(equipment);
     return equipmentList;
   }
@@ -193,7 +197,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Recipe operations
-  async getAllRecipes(): Promise<Recipe[]> {
+  async getAllRecipes(breweryId?: string): Promise<Recipe[]> {
+    if (breweryId) {
+      const recipeList = await db.select().from(recipes).where(eq(recipes.breweryId, breweryId));
+      return recipeList;
+    }
     const recipeList = await db.select().from(recipes);
     return recipeList;
   }
@@ -226,7 +234,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Brewing schedule operations
-  async getAllBrewingSchedules(): Promise<BrewingSchedule[]> {
+  async getAllBrewingSchedules(breweryId?: string): Promise<BrewingSchedule[]> {
+    if (breweryId) {
+      const schedules = await db.select().from(brewingSchedules).where(eq(brewingSchedules.breweryId, breweryId));
+      return schedules;
+    }
     const schedules = await db.select().from(brewingSchedules);
     return schedules;
   }

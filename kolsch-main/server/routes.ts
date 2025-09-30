@@ -406,9 +406,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Equipment routes
-  app.get("/api/equipment", async (_req: Request, res: Response) => {
+  app.get("/api/equipment", async (req: Request, res: Response) => {
     try {
-      const equipmentItems = await storage.getAllEquipment();
+      const session = req.session as any;
+      const breweryId = session?.breweryId;
+
+      if (!breweryId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const equipmentItems = await storage.getAllEquipment(breweryId);
       res.json(equipmentItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch equipment items" });
@@ -488,10 +495,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Recipe routes
-  app.get("/api/recipes", async (_req: Request, res: Response) => {
+  app.get("/api/recipes", async (req: Request, res: Response) => {
     try {
+      const session = req.session as any;
+      const breweryId = session?.breweryId;
+
+      if (!breweryId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
       console.log("=== FETCHING RECIPES ===");
-      const recipes = await storage.getAllRecipes();
+      const recipes = await storage.getAllRecipes(breweryId);
       console.log("Recipes fetched successfully:", recipes.length, "recipes");
       res.json(recipes);
     } catch (error) {
@@ -620,9 +634,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Brewing schedule routes
-  app.get("/api/schedules", async (_req: Request, res: Response) => {
+  app.get("/api/schedules", async (req: Request, res: Response) => {
     try {
-      const schedules = await storage.getAllBrewingSchedules();
+      const session = req.session as any;
+      const breweryId = session?.breweryId;
+
+      if (!breweryId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const schedules = await storage.getAllBrewingSchedules(breweryId);
       res.json(schedules);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch brewing schedules" });
@@ -784,11 +805,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stats routes
-  app.get("/api/stats", async (_req: Request, res: Response) => {
+  app.get("/api/stats", async (req: Request, res: Response) => {
     try {
-      const inventoryItems = await storage.getInventoryItems();
-      const equipmentItems = await storage.getAllEquipment();
-      const schedules = await storage.getAllBrewingSchedules();
+      const session = req.session as any;
+      const breweryId = session?.breweryId;
+
+      if (!breweryId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const inventoryItems = await storage.getInventoryItems(breweryId);
+      const equipmentItems = await storage.getAllEquipment(breweryId);
+      const schedules = await storage.getAllBrewingSchedules(breweryId);
       
       // Calculate the stats
       const batchesInProcess = schedules.filter(s => s.status === "in_progress").length;
