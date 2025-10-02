@@ -53,16 +53,20 @@ export default function LoginPage() {
         throw new Error(error.message || 'Login failed');
       }
 
-      const result = await response.json();
-      
-      // Invalidate the auth query to refresh user state
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      
+      await response.json();
+
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-      
+
+      // Invalidate and refetch the auth query to refresh user state
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+
+      // Small delay to ensure auth state is updated before navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (error: any) {
