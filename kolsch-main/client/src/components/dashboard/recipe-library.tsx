@@ -1,37 +1,134 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Recipe } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RecipeLibrary() {
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    ingredients: [] as string[],
+    instructions: [] as string[],
+    description: "",
+  });
+
   const { data: recipes, isLoading } = useQuery<Recipe[]>({
     queryKey: ['/api/recipes'],
   });
-  
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { breweryId } = useAuth();
+  const [, navigate] = useLocation();
+
   // Filter recipes based on search term
-  const filteredRecipes = recipes?.filter(recipe => 
-    recipe.name?.toLowerCase().includes(searchTerm.toLowerCase()) //||
-    // recipe.style?.toLowerCase().includes(searchTerm.toLowerCase()) || // TODO: add style to schema missing from recipe flow inputs
-   // recipe.notes?.toLowerCase().includes(searchTerm.toLowerCase()) // TODO: add notes to schema missing from recipe flow inputs
+  const filteredRecipes = recipes?.filter(recipe =>
+    recipe.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('/api/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...formData,
+          breweryId,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create recipe');
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/recipes'] });
+
+      toast({
+        title: "Success",
+        description: "Recipe created successfully!",
+      });
+
+      setIsAddDialogOpen(false);
+      setFormData({ name: "", ingredients: [], instructions: [], description: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create recipe. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold">Recipe Library</CardTitle>
-        <Link href="/recipes">
-          <Button variant="outline" size="sm">
-            <span className="hidden sm:inline">Add</span> Recipe
-          </Button>
-        </Link>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Add</span> Recipe
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Recipe</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Recipe Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  You can add detailed ingredients and instructions after creating the recipe.
+                </p>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-primary hover:bg-primary-dark">
+                  Create Recipe
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         <div className="relative mb-4">
