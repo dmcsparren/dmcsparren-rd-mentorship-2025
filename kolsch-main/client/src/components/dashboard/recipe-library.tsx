@@ -27,9 +27,11 @@ export default function RecipeLibrary() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold">Recipe Library</CardTitle>
-        <Button variant="outline" size="sm">
-          <span className="hidden sm:inline">Add</span> Recipe
-        </Button>
+        <Link href="/recipes">
+          <Button variant="outline" size="sm">
+            <span className="hidden sm:inline">Add</span> Recipe
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         <div className="relative mb-4">

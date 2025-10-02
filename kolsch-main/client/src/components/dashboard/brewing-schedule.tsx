@@ -46,9 +46,11 @@ export default function BrewingScheduleWidget() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold">Brewing Schedule</CardTitle>
-        <Button size="sm" className="bg-primary hover:bg-primary-dark">
-          New Brew
-        </Button>
+        <Link href="/schedule">
+          <Button size="sm" className="bg-primary hover:bg-primary-dark">
+            New Brew
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center mb-4">

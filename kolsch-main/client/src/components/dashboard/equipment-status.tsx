@@ -5,6 +5,7 @@ import { Equipment } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { FlaskRound } from "lucide-react";
+import { Link } from "wouter";
 
 export default function EquipmentStatus() {
   const { data: equipment, isLoading } = useQuery<Equipment[]>({
@@ -38,9 +39,11 @@ export default function EquipmentStatus() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold">Equipment Status</CardTitle>
-        <Button variant="outline" size="sm">
-          Manage Equipment
-        </Button>
+        <Link href="/equipment">
+          <Button variant="outline" size="sm">
+            Manage Equipment
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         {isLoading ? (

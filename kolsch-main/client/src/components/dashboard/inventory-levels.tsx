@@ -104,13 +104,17 @@ export default function InventoryLevels() {
           Inventory Levels
         </CardTitle>
         <div className="flex space-x-2">
-          <Button size="sm" className="bg-secondary hover:bg-secondary-dark">
-            <Package2 className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Order</span> Supplies
-          </Button>
-          <Button size="sm" variant="outline">
-            <Filter className="h-4 w-4" />
-          </Button>
+          <Link href="/ingredients">
+            <Button size="sm" className="bg-secondary hover:bg-secondary-dark">
+              <Package2 className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Order</span> Supplies
+            </Button>
+          </Link>
+          <Link href="/inventory">
+            <Button size="sm" variant="outline">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </CardHeader>
       <CardContent>
